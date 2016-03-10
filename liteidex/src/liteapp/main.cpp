@@ -96,6 +96,11 @@ int main(int argc, char *argv[])
             app.setProperty("liteide_locale", locale);
         }
     }
+
+#if QT_VERSION >= 0x050000
+    app.setStyle("fusion");
+#endif
+
     if (!qss.isEmpty()) {
         QFile f(resPath+"/liteapp/qss/"+qss);
         if (f.open(QFile::ReadOnly)) {
