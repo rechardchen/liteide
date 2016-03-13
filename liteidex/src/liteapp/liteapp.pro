@@ -76,7 +76,8 @@ SOURCES += main.cpp\
     textbrowserhtmlwidget.cpp \
     splitwindowstyle.cpp \
     sidewindowstyle.cpp \
-    outputoption.cpp
+    outputoption.cpp \
+    openfiledialog.cpp
 
 HEADERS  += mainwindow.h \
     liteapp.h \
@@ -108,7 +109,8 @@ HEADERS  += mainwindow.h \
     windowstyle.h \
     splitwindowstyle.h \
     sidewindowstyle.h \
-    outputoption.h
+    outputoption.h \
+    openfiledialog.h
 
 FORMS += \
     aboutdialog.ui \
@@ -116,7 +118,8 @@ FORMS += \
     newfiledialog.ui \
     optionswidget.ui \
     liteappoption.ui \
-    outputoption.ui
+    outputoption.ui \
+    openfiledialog.ui
 
 RESOURCES += \
     liteapp.qrc
