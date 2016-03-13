@@ -32,6 +32,7 @@ using namespace LiteApi;
 class QFileSystemWatcher;
 class NewFileDialog;
 class FolderListView;
+class openfiledialog;
 
 class FileManager : public IFileManager
 {
@@ -90,6 +91,7 @@ public slots:
     void activatedFolderView(const QModelIndex &index);
     void currentEditorChanged(LiteApi::IEditor *editor);
     void triggeredSyncEditor(bool b);
+    void searchFile();
 protected:
     NewFileDialog        *m_newFileDialog;
     FolderListView     *m_folderListView;
@@ -107,6 +109,8 @@ protected:
     QMenu*       m_filterMenu;
     QAction*     m_showHideFilesAct;
     QAction*     m_syncEditorAct;
+    QAction*     m_searchFileAct;
+    openfiledialog* m_searchFileDialog;
 };
 
 #endif // FILEMANAGER_H

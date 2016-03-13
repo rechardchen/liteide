@@ -27,6 +27,7 @@
 #include "liteenvapi/liteenvapi.h"
 #include "folderview/folderlistview.h"
 #include "liteapp_global.h"
+#include "openfiledialog.h"
 
 #include <QMenu>
 #include <QAction>
@@ -121,13 +122,18 @@ bool FileManager::initWithApp(IApplication *app)
         m_syncEditorAct->setChecked(true);
     }
 
+    LiteApi::IActionContext* actContext =  m_liteApp->actionManager()->getActionContext(this, "App");
+    m_searchFileAct = new QAction(tr("Search File"), this);
+    actContext->regAction(m_searchFileAct, tr("Search File"), "CTRL+K");
+    connect(m_searchFileAct, SLOT(trigger()), this, SLOT(searchFile()));
     return true;
 }
 
 FileManager::FileManager()
     : m_newFileDialog(0),
       m_folderListView(0),
-      m_checkActivated(false)
+      m_checkActivated(false),
+      m_searchFileDialog(0)
 {
 }
 
@@ -143,7 +149,11 @@ FileManager::~FileManager()
     }
     if (m_folderListView) {
         delete m_folderListView;
-    }    
+    }
+    if (m_searchFileDialog)
+    {
+        delete m_searchFileDialog;
+    }
     delete m_filterMenu;
 }
 
@@ -621,6 +631,17 @@ void FileManager::triggeredSyncEditor(bool b)
     if (b) {
         this->currentEditorChanged(m_liteApp->editorManager()->currentEditor());
     }
+}
+
+void FileManager::searchFile()
+{
+    if (!m_searchFileDialog)
+    {
+        m_searchFileDialog = new openfiledialog(m_liteApp->mainWindow());
+        m_searchFileDialog->setFolderViewModel(m_folderListView->folderListModel());
+    }
+
+    m_searchFileDialog->exec();
 }
 
 void FileManager::updateRecentFileActions(const QString &scheme)
