@@ -673,7 +673,11 @@ void LiteApp::createActions()
 #endif
     actionContext->regAction(m_aboutPluginsAct,"AboutPlugins","");
 
-    connect(m_newAct,SIGNAL(triggered()),m_fileManager,SLOT(newFile()));
+    m_searchFileAct = new QAction(tr("Search File"), m_mainwindow);
+    actionContext->regAction(m_searchFileAct, "Search File", "Ctrl+K");
+
+    connect(m_searchFileAct, SIGNAL(triggered()), m_fileManager, SLOT(searchFile()));
+    connect(m_newAct,SIGNAL(triggered()),m_fileManager,SLOT(searchFile()));
     connect(m_openFileAct,SIGNAL(triggered()),m_fileManager,SLOT(openFiles()));
     connect(m_openFolderAct,SIGNAL(triggered()),m_fileManager,SLOT(openFolder()));
     connect(m_openFolderNewWindowAct,SIGNAL(triggered()),m_fileManager,SLOT(openFolderNewWindow()));

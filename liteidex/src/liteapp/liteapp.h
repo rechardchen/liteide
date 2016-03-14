@@ -162,6 +162,7 @@ protected:
     QAction     *m_aboutAct;
     QAction     *m_aboutPluginsAct;
     QAction     *m_fullScreent;
+    QAction     *m_searchFileAct;
     QToolBar    *m_stdToolBar;
     QMenu       *m_fileMenu;
     QMenu       *m_viewMenu;

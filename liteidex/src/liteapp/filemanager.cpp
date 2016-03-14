@@ -122,10 +122,6 @@ bool FileManager::initWithApp(IApplication *app)
         m_syncEditorAct->setChecked(true);
     }
 
-    LiteApi::IActionContext* actContext =  m_liteApp->actionManager()->getActionContext(this, "App");
-    m_searchFileAct = new QAction(tr("Search File"), this);
-    actContext->regAction(m_searchFileAct, tr("Search File"), "CTRL+K");
-    connect(m_searchFileAct, SLOT(trigger()), this, SLOT(searchFile()));
     return true;
 }
 

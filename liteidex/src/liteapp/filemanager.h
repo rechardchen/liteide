@@ -109,7 +109,6 @@ protected:
     QMenu*       m_filterMenu;
     QAction*     m_showHideFilesAct;
     QAction*     m_syncEditorAct;
-    QAction*     m_searchFileAct;
     openfiledialog* m_searchFileDialog;
 };
 
