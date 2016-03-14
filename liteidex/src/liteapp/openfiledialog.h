@@ -7,8 +7,7 @@ namespace Ui {
 class openfiledialog;
 }
 
-class QSortFilterProxyModel;
-class FolderListModel;
+class FileNameFinder;
 class openfiledialog : public QDialog
 {
     Q_OBJECT
@@ -17,12 +16,12 @@ public:
     explicit openfiledialog(QWidget *parent = 0);
     ~openfiledialog();
 
-    void setFolderViewModel(FolderListModel*);
 public slots:
     void reApplyFilter();
+    void appendResult(const QFileInfo&);
 
 private:
-    QSortFilterProxyModel* m_proxy;
+    FileNameFinder* finder;
     Ui::openfiledialog *ui;
 };
 

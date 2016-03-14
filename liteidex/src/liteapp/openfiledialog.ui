@@ -18,18 +18,24 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0">
-     <property name="sizeConstraint">
-      <enum>QLayout::SetDefaultConstraint</enum>
-     </property>
-     <property name="bottomMargin">
-      <number>0</number>
-     </property>
+    <layout class="QVBoxLayout" name="verticalLayout">
      <item>
-      <widget class="QTreeView" name="filelist">
-       <property name="indentation">
-        <number>0</number>
-       </property>
+      <widget class="QTableWidget" name="filelist">
+       <column>
+        <property name="text">
+         <string>Filename</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Directory</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Modified Date</string>
+        </property>
+       </column>
       </widget>
      </item>
      <item>
