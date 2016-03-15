@@ -673,11 +673,11 @@ void LiteApp::createActions()
 #endif
     actionContext->regAction(m_aboutPluginsAct,"AboutPlugins","");
 
-    m_searchFileAct = new QAction(tr("Search File"), m_mainwindow);
+    m_searchFileAct = new QAction(QIcon("icon:images/openfile.png"), tr("Search File"), m_mainwindow);
     actionContext->regAction(m_searchFileAct, "Search File", "Ctrl+K");
 
     connect(m_searchFileAct, SIGNAL(triggered()), m_fileManager, SLOT(searchFile()));
-    connect(m_newAct,SIGNAL(triggered()),m_fileManager,SLOT(searchFile()));
+    connect(m_newAct,SIGNAL(triggered()),m_fileManager,SLOT(newFile()));
     connect(m_openFileAct,SIGNAL(triggered()),m_fileManager,SLOT(openFiles()));
     connect(m_openFolderAct,SIGNAL(triggered()),m_fileManager,SLOT(openFolder()));
     connect(m_openFolderNewWindowAct,SIGNAL(triggered()),m_fileManager,SLOT(openFolderNewWindow()));
@@ -708,6 +708,7 @@ void LiteApp::createMenus()
     m_fileMenu->addAction(m_openFileAct);
     m_fileMenu->addAction(m_openFolderAct);
     m_fileMenu->addAction(m_openFolderNewWindowAct);
+    m_fileMenu->addAction(m_searchFileAct);
     m_fileMenu->addSeparator();
     m_fileMenu->addAction(m_saveAct);
     m_fileMenu->addAction(m_saveAsAct);

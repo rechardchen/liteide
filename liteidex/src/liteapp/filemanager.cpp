@@ -634,10 +634,14 @@ void FileManager::searchFile()
     if (!m_searchFileDialog)
     {
         m_searchFileDialog = new openfiledialog(m_liteApp->mainWindow());
-        m_searchFileDialog->setFolderViewModel(m_folderListView->folderListModel());
     }
 
-    m_searchFileDialog->exec();
+    m_searchFileDialog->init(m_folderListView->rootPathList());
+    if (m_searchFileDialog->exec() == QDialog::Accepted)
+    {
+        QString result = m_searchFileDialog->getResult();
+        openFile(result);
+    }
 }
 
 void FileManager::updateRecentFileActions(const QString &scheme)

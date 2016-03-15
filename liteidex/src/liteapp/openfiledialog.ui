@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>504</width>
-    <height>375</height>
+    <width>787</width>
+    <height>459</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,6 +21,21 @@
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
       <widget class="QTableWidget" name="filelist">
+       <property name="editTriggers">
+        <set>QAbstractItemView::NoEditTriggers</set>
+       </property>
+       <property name="selectionMode">
+        <enum>QAbstractItemView::SingleSelection</enum>
+       </property>
+       <property name="selectionBehavior">
+        <enum>QAbstractItemView::SelectRows</enum>
+       </property>
+       <property name="showGrid">
+        <bool>false</bool>
+       </property>
+       <attribute name="verticalHeaderVisible">
+        <bool>false</bool>
+       </attribute>
        <column>
         <property name="text">
          <string>Filename</string>
@@ -33,7 +48,12 @@
        </column>
        <column>
         <property name="text">
-         <string>Modified Date</string>
+         <string>Modified</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string/>
         </property>
        </column>
       </widget>
@@ -56,6 +76,11 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>filename</tabstop>
+  <tabstop>filelist</tabstop>
+  <tabstop>typecombo</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
