@@ -1,6 +1,7 @@
 #include <QDateTime>
 #include <QThread>
 #include <QDir>
+#include <QKeyEvent>
 #include "openfiledialog.h"
 #include "ui_openfiledialog.h"
 
@@ -111,7 +112,7 @@ void openfiledialog::appendResult(const QFileInfo & fileInfo)
 
     ui->filelist->setItem(row, 0, new QTableWidgetItem(fileInfo.fileName()));
     ui->filelist->setItem(row, 1, new QTableWidgetItem(fileInfo.path()));
-    ui->filelist->setItem(row, 2, new QTableWidgetItem(fileInfo.lastModified().toString()));
+    ui->filelist->setItem(row, 2, new QTableWidgetItem(fileInfo.lastModified().toString("yyyy/M/d h:m")));
 }
 
 void openfiledialog::selectFile(int r, int c)
@@ -128,4 +129,27 @@ void openfiledialog::showEvent(QShowEvent *evt)
     ui->filename->setFocus();
 }
 
+void openfiledialog::keyPressEvent(QKeyEvent *keyEvt)
+{
+    if (keyEvt->key() == Qt::Key_Up)
+    {
+        int cr = ui->filelist->currentRow();
+        ui->filelist->selectRow(cr - 1);
+    }
+    else if (keyEvt->key() == Qt::Key_Down)
+    {
+        int cr = ui->filelist->currentRow();
+        ui->filelist->selectRow(cr + 1);
+    }
+    else if (keyEvt->key() == Qt::Key_Return)
+    {
+        int cr = ui->filelist->currentRow();
+        if (cr < 0) cr = 0;
+        selectFile(cr, 0);
+    }
+    else
+    {
+        QDialog::keyPressEvent(keyEvt);
+    }
+}
 
