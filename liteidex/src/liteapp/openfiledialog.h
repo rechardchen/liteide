@@ -54,6 +54,7 @@ public slots:
 
 protected:
     virtual void showEvent(QShowEvent*);
+    virtual void keyPressEvent(QKeyEvent*);
 
 signals:
     void fileSelected(const QString&);
