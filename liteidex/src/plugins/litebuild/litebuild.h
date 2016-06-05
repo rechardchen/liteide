@@ -47,7 +47,6 @@ public:
     explicit LiteBuild(LiteApi::IApplication *app, QObject *parent = 0);
     virtual ~LiteBuild();
 public:
-    virtual void rebuild();
     virtual QString buildTag() const;
     virtual QMap<QString,QString> buildEnvMap() const;
     virtual QMap<QString,QString> liteideEnvMap() const;
@@ -55,8 +54,8 @@ public:
     virtual QString envValue(LiteApi::IBuild *build, const QString &value);
     virtual LiteApi::IBuildManager *buildManager() const;
     virtual void appendOutput(const QString &str, const QBrush &brush, bool active, bool updateExistsTextColor = true);
-    virtual void executeCommand(const QString &cmd, const QString &args, const QString &workDir,bool updateExistsTextColor = true, bool activateOutputCheck = true, bool navigate = true, bool command = true);
-    virtual bool buildTests();
+    virtual void execCommand(const QString &cmd, const QString &args, const QString &workDir,bool updateExistsTextColor = true, bool activateOutputCheck = true, bool navigate = true, bool command = true);
+    virtual bool execGoCommand(const QStringList &args, const QString &workDir, bool waitFinish);
     QMap<QString,QString> buildEnvMap(LiteApi::IBuild *build, const QString &buildTag) const;
 public:
     QString envToValue(const QString &value,QMap<QString,QString> &liteEnv,const QProcessEnvironment &env);
@@ -100,6 +99,7 @@ public slots:
     void lockBuildRoot(bool b);
     void setOutputLineWrap(bool b);
     void setOutputAutoClear(bool b);
+    void setOutputAutoPosCursor(bool b);
 protected:
     QMenu *m_nullMenu;
     LiteApi::IApplication   *m_liteApp;
@@ -118,17 +118,28 @@ protected:
     QMenu      *m_outputMenu;
     QAction    *m_outputLineWrapAct;
     QAction    *m_outputAutoClearAct;
+    QAction    *m_outputAutoPosCursorAct;
     QAction     *m_configAct;
     QAction     *m_stopAct;
     QAction     *m_clearAct;
     QAction     *m_outputAct;
+    QMenu       *m_fmctxGoToolMenu;
     QAction     *m_fmctxExecuteFileAct;
     QAction     *m_fmctxGoLockBuildAct;
     QAction     *m_fmctxGoBuildAct;
+    QAction     *m_fmctxGoBuildAllAct;
     QAction     *m_fmctxGoInstallAct;
+    QAction     *m_fmctxGoInstallAllAct;
     QAction     *m_fmctxGoTestAct;
+    QAction     *m_fmctxGoTestAllAct;
     QAction     *m_fmctxGoCleanAct;
+    QAction     *m_fmctxGoCleanAllAct;
+    QAction     *m_fmctxGoGetAct;
+    QAction     *m_fmctxGoGetUpdateAct;
+    QAction     *m_fmctxGoGetForceAct;
     QAction     *m_fmctxGoFmtAct;
+    QAction     *m_fmctxGoVetAct;
+    QAction     *m_fmctxGoVetAllCheckAct;
     QCheckBox   *m_checkBoxLockBuild;
     QFileInfo   m_fmctxInfo;
     QString     m_outputRegex;

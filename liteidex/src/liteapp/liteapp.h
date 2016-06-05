@@ -42,8 +42,10 @@ class MimeTypeManager;
 class OptionManager;
 class ToolWindowManager;
 class HtmlWidgetManager;
+class FilterManager;
 class QSettings;
 class QSplitter;
+class QComboBox;
 class LiteAppOptionFactory;
 
 
@@ -52,6 +54,7 @@ class LiteApp : public IApplication
     Q_OBJECT
 public:
     static QString getRootPath();
+    static QString getToolPath();
     static QString getPluginPath();
     static QString getResoucePath();
     static QString getStoragePath();
@@ -72,13 +75,16 @@ public:
     virtual IOptionManager  *optionManager();
     virtual IToolWindowManager *toolWindowManager();
     virtual IHtmlWidgetManager *htmlWidgetManager();
+    virtual IFilterManager *filterManager();
 
     virtual QMainWindow *mainWindow() const;
     virtual QSettings *settings();
     virtual QMap<QString,QVariant> &globalCookie();
 
-    virtual QString resourcePath() const;
+    virtual QString rootPath() const;
     virtual QString applicationPath() const;
+    virtual QString toolPath() const;
+    virtual QString resourcePath() const;
     virtual QString pluginPath() const;
     virtual QString storagePath() const;
 
@@ -121,7 +127,9 @@ protected slots:
     void exit();
     void applyOption(QString id);
 protected:
+    QString         m_rootPath;
     QString         m_applicationPath;
+    QString         m_toolPath;
     QString         m_pluginPath;
     QString         m_resourcePath;
     QString         m_storagePath;
@@ -136,6 +144,7 @@ protected:
     FileManager    *m_fileManager;
     MimeTypeManager *m_mimeTypeManager;
     OptionManager   *m_optionManager;
+    FilterManager   *m_filterManager;
     TextOutput    *m_logOutput;
     QAction       *m_logAct;
     LiteAppOptionFactory *m_liteAppOptionFactory;

@@ -71,11 +71,17 @@ DebugWidget::DebugWidget(LiteApi::IApplication *app, QObject *parent) :
     m_watchView->setContextMenuPolicy(Qt::CustomContextMenu);
 
     m_statckView->setEditTriggers(0);
+#if QT_VERSION >= 0x050000
+    m_statckView->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
+#else
+    m_statckView->header()->setResizeMode(QHeaderView::ResizeToContents);
+#endif
     m_libraryView->setEditTriggers(0);
 
     m_debugLogEdit = new TerminalEdit;
     m_debugLogEdit->setReadOnly(false);
     m_debugLogEdit->setMaximumBlockCount(1024);
+    m_debugLogEdit->setLineWrapMode(QPlainTextEdit::NoWrap);
 
     m_tabWidget->addTab(m_asyncView,tr("Async Record"));
     m_tabWidget->addTab(m_varsView,tr("Variables"));
@@ -92,11 +98,11 @@ DebugWidget::DebugWidget(LiteApi::IApplication *app, QObject *parent) :
 
     m_watchMenu = new QMenu(m_widget);
     m_addWatchAct = new QAction(tr("Add Global Watch"),this);
-    m_addLocalWatchAct = new QAction(tr("Add Local Watch"),this);
+    //m_addLocalWatchAct = new QAction(tr("Add Local Watch"),this);
     m_removeWatchAct = new QAction(tr("Remove Watch"),this);
     m_removeAllWatchAct = new QAction(tr("Remove All Watches"),this);
     m_watchMenu->addAction(m_addWatchAct);
-    m_watchMenu->addAction(m_addLocalWatchAct);
+    //m_watchMenu->addAction(m_addLocalWatchAct);
     m_watchMenu->addSeparator();
     m_watchMenu->addAction(m_removeWatchAct);
     m_watchMenu->addAction(m_removeAllWatchAct);
@@ -105,10 +111,10 @@ DebugWidget::DebugWidget(LiteApi::IApplication *app, QObject *parent) :
     connect(m_varsView,SIGNAL(expanded(QModelIndex)),this,SLOT(expandedVarsView(QModelIndex)));
     connect(m_watchView,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(watchViewContextMenu(QPoint)));
     connect(m_addWatchAct,SIGNAL(triggered()),this,SLOT(addWatch()));
-    connect(m_addLocalWatchAct,SIGNAL(triggered()),this,SLOT(addLocalWatch()));
+    //connect(m_addLocalWatchAct,SIGNAL(triggered()),this,SLOT(addLocalWatch()));
     connect(m_removeWatchAct,SIGNAL(triggered()),this,SLOT(removeWatch()));
     connect(m_removeAllWatchAct,SIGNAL(triggered()),this,SLOT(removeAllWatchAct()));
-    connect(m_statckView,SIGNAL(clicked(QModelIndex)),this,SLOT(stackClicked(QModelIndex)));
+    connect(m_statckView,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(doubleClickedStack(QModelIndex)));
 }
 
 DebugWidget::~DebugWidget()
@@ -128,7 +134,7 @@ void DebugWidget::enterText(const QString &text)
     QString cmd = text.simplified();
     if (!cmd.isEmpty() && m_debugger && m_debugger->isRunning()) {
         emit debugCmdInput();
-        m_debugger->command(cmd.toUtf8());
+        m_debugger->enterDebugText(cmd);
     }
 }
 
@@ -236,13 +242,14 @@ void DebugWidget::watchViewContextMenu(QPoint pos)
 void DebugWidget::loadDebugInfo(const QString &id)
 {
     m_watchMap.clear();
-    foreach(QString var, m_liteApp->settings()->value(id).toStringList()) {
-        if (var.indexOf(".") < 0) {
-            //local var
-            m_debugger->createWatch(var,true,false);
-        }
-        m_debugger->createWatch(var,false,true);
-    }
+    m_debugger->setInitWatchList(m_liteApp->settings()->value(id+"/watch").toStringList());
+//    foreach(QString var, m_liteApp->settings()->value(id+"/watch").toStringList()) {
+//        if (var.indexOf(".") < 0) {
+//            //local var
+//            m_debugger->createWatch(var,true,false);
+//        }
+//        m_debugger->createWatch(var,false,true);
+//    }
 }
 
 void DebugWidget::saveDebugInfo(const QString &id)
@@ -251,7 +258,7 @@ void DebugWidget::saveDebugInfo(const QString &id)
     foreach(QString var, m_watchMap.values()) {
         vars.append(var);
     }
-    m_liteApp->settings()->setValue(id,vars);
+    m_liteApp->settings()->setValue(id+"/watch",vars);
 }
 
 void DebugWidget::addWatch()
@@ -260,19 +267,7 @@ void DebugWidget::addWatch()
     if (text.isEmpty()) {
         return;
     }
-    if (text.indexOf(".") >= 0) {
-        text = QString("\'%1'").arg(text);
-    }
-    m_debugger->createWatch(text,false,true);
-}
-
-void DebugWidget::addLocalWatch()
-{
-    QString text = QInputDialog::getText(this->m_widget,tr("Add Local Watch"),tr("Watch expression (e.g. s1.str):"));
-    if (text.isEmpty()) {
-        return;
-    }
-    m_debugger->createWatch(text,false,true);
+    m_debugger->createWatch(text);
 }
 
 void DebugWidget::removeWatch()
@@ -286,21 +281,13 @@ void DebugWidget::removeWatch()
         return;
     }
     QString name = head.data(Qt::UserRole + 1).toString();
-    m_debugger->removeWatchByName(name,true);
+    m_debugger->removeWatch(name);
 }
 
 void DebugWidget::removeAllWatchAct()
 {
-    QStringList watchList;
-    for (int i = 0; i < m_watchView->model()->rowCount(); i++) {
-        QModelIndex index = m_watchView->model()->index(i,0);
-        if (index.isValid()) {
-            watchList << index.data(Qt::DisplayRole).toString();
-        }
-    }
-    foreach(QString var, watchList) {
-        m_debugger->removeWatch(var,true);
-    }
+    m_debugger->removeAllWatch();
+    m_watchMap.clear();
 }
 
 void DebugWidget::watchCreated(QString var,QString name)
@@ -320,7 +307,7 @@ void DebugWidget::setInputFocus()
     m_debugLogEdit->setFocus();
 }
 
-void DebugWidget::stackClicked(QModelIndex index)
+void DebugWidget::doubleClickedStack(QModelIndex index)
 {
     if (!index.isValid()) {
         return;

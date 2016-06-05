@@ -295,10 +295,14 @@ bool LiteCompleter::startCompleter(const QString &completionPrefix)
         this->setCompletionPrefix(completionPrefix);
         this->popup()->setCurrentIndex(this->completionModel()->index(0, 0));
     }
+    if (this->completionContext() == LiteApi::CompleterImportContext && completionPrefix.endsWith("/")) {
+        goto end;
+    }
     if (!completionPrefix.isEmpty() && this->currentCompletion() == completionPrefix) {
         this->popup()->hide();
         return false;
     }
+end:
     this->showPopup();
     return true;
 }
@@ -471,7 +475,9 @@ void LiteCompleter::insertCompletion(QModelIndex index)
     wordText = text;
 
     if (kind == "func") {
-        if (tc.block().text().at(tc.positionInBlock()) != '(') {
+        //qDebug() << "->" << tc.positionInBlock() << tc.block().text() << tc.block().text().size();
+        int pos = tc.positionInBlock();
+        if (pos == tc.block().text().size() || tc.block().text().at(tc.positionInBlock()) != '(') {
             extra += "()";
             tc.insertText(extra);
             if (!info.startsWith("func()")) {

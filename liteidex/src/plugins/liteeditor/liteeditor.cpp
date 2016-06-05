@@ -935,6 +935,7 @@ void LiteEditor::applyOption(QString id)
     updateFont();
 
     QString mime = this->m_file->mimeType();
+    m_editorWidget->setMimeType(mime);
     int tabWidth = m_liteApp->settings()->value(EDITOR_TABWIDTH+mime,4).toInt();
     bool useSpace = m_liteApp->settings()->value(EDITOR_TABTOSPACES+mime,false).toBool();
     this->setTabOption(tabWidth,useSpace);
@@ -1214,6 +1215,11 @@ void LiteEditor::setLineEndUnix(bool b)
         m_lineEndingWindowAct->setChecked(!b);
         m_liteApp->editorManager()->saveEditor(this,false);
     }
+}
+
+void LiteEditor::showToolTipInfo(const QPoint &pos, const QString &text)
+{
+    m_editorWidget->showToolTipInfo(pos,text);
 }
 
 void LiteEditor::selectNextParam()

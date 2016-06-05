@@ -220,6 +220,37 @@ void LiteDebug::appLoaded()
         markTypeManager->registerMark(BreakPointMark,QIcon("icon:litedebug/images/breakmark.png"));
         markTypeManager->registerMark(CurrentLineMark,QIcon("icon:litedebug/images/linemark.png"));
     }
+    //QMenu *menu = new QMenu(tr("Select Debug"));
+    QActionGroup *group = new QActionGroup(this);
+    QString mimeType = m_liteApp->settings()->value(LITEDEBUG_DEBUGGER,"debugger/gdb").toString();
+    foreach (LiteApi::IDebugger *debug, m_manager->debuggerList()) {
+        QAction *act = new QAction(debug->mimeType(),this);
+        act->setObjectName(debug->mimeType());
+        act->setCheckable(true);
+        group->addAction(act);
+        if (mimeType == debug->mimeType()) {
+            act->setChecked(true);
+            m_manager->setCurrentDebugger(debug);
+        }
+    }
+   // menu->addActions(group->actions());
+    connect(group,SIGNAL(triggered(QAction*)),this,SLOT(selectedDebug(QAction*)));
+    QAction *first = m_debugMenu->actions().at(0);
+    //m_debugMenu->insertMenu(first,menu);
+    m_debugMenu->insertActions(first,group->actions());
+    m_debugMenu->insertSeparator(first);
+}
+
+void LiteDebug::selectedDebug(QAction *act)
+{
+    stopDebug();
+
+    QString mimeType = act->objectName();
+    LiteApi::IDebugger *debug = m_manager->findDebugger(mimeType);
+    if (debug) {
+        m_manager->setCurrentDebugger(debug);
+        m_liteApp->settings()->setValue(LITEDEBUG_DEBUGGER,mimeType);
+    }
 }
 
 void LiteDebug::editorCreated(LiteApi::IEditor *editor)
@@ -330,9 +361,9 @@ void LiteDebug::startDebug(const QString &cmd, const QString &args, const QStrin
         return;
     }
     if (QFileInfo(cmd).isAbsolute()) {
-        m_debugInfoId = cmd;
+        m_debugInfoId = "litedebug/"+cmd;
     } else {
-        m_debugInfoId = work+"/"+cmd;
+        m_debugInfoId = "litedebug/"+work+"/"+cmd;
     }
 
     QDir dir(work);
@@ -396,19 +427,23 @@ bool LiteDebug::isRunning() const
 
 void LiteDebug::setDebugger(LiteApi::IDebugger *debug)
 {
+    if (m_debugger) {
+        disconnect(m_debugger,0,this,0);
+    }
     m_debugger = debug;
     if (m_debugger) {
         connect(m_debugger,SIGNAL(debugStarted()),this,SLOT(debugStarted()));
         connect(m_debugger,SIGNAL(debugStoped()),this,SLOT(debugStoped()));
         connect(m_debugger,SIGNAL(debugLog(LiteApi::DEBUG_LOG_TYPE,QString)),this,SLOT(debugLog(LiteApi::DEBUG_LOG_TYPE,QString)));
         connect(m_debugger,SIGNAL(setCurrentLine(QString,int)),this,SLOT(setCurrentLine(QString,int)));
+        connect(m_debugger,SIGNAL(setFrameLine(QString,int)),this,SLOT(setFrameLine(QString,int)));
         connect(m_debugger,SIGNAL(debugLoaded()),this,SLOT(debugLoaded()));
     }
     m_dbgWidget->setDebugger(m_debugger);
 }
 
 void LiteDebug::debugLog(LiteApi::DEBUG_LOG_TYPE type, const QString &log)
-{
+{    
     switch(type) {
     case LiteApi::DebugConsoleLog:
         m_dbgWidget->appendLog(log);
@@ -425,41 +460,6 @@ void LiteDebug::debugLog(LiteApi::DEBUG_LOG_TYPE type, const QString &log)
     }
 }
 
-void LiteDebug::startDebugTests()
-{
-    if (!m_debugger) {
-        return;
-    }
-    if (m_debugger->isRunning()) {
-        m_debugger->continueRun();
-        return;
-    }
-
-    if (!m_liteBuild) {
-        return;
-    }
-
-    LiteApi::IEditor *editor = m_liteApp->editorManager()->currentEditor();
-    if (editor) {
-        m_startDebugFile = editor->filePath();
-    }
-
-    if(!m_liteBuild->buildTests())
-    {
-    	m_liteApp->appendLog("LiteDebug","Build tests failed",true);
-    }
-    LiteApi::TargetInfo info = m_liteBuild->getTargetInfo();
-
-    QString testCmd = info.cmd+".test";
-    QString findCmd = FileUtil::lookPathInDir(testCmd,info.workDir);
-
-    if (!findCmd.isEmpty()) {
-        testCmd = QFileInfo(findCmd).fileName();
-    }
-
-	this->startDebug(testCmd,info.args,info.workDir);
-}
-
 void LiteDebug::startDebug()
 {
     if (!m_debugger) {
@@ -470,28 +470,78 @@ void LiteDebug::startDebug()
         return;
     }
 
+
     if (!m_liteBuild) {
         return;
     }
 
-    bool b = m_liteApp->settings()->value(LITEDEBUG_REBUILD,false).toBool();
-    if (b) {
-        m_liteBuild->rebuild();
-    }
+    m_liteApp->editorManager()->saveAllEditors();
 
     LiteApi::TargetInfo info = m_liteBuild->getTargetInfo();
 
-    QString findCmd = FileUtil::lookPathInDir(info.cmd,info.workDir);
-    if (!findCmd.isEmpty()) {
-        info.cmd = QFileInfo(findCmd).fileName();
+    QStringList args;
+    args << "build" << "-gcflags" << "\"-N -l\"";
+    bool b = m_liteBuild->execGoCommand(args,info.workDir,true);
+    if (!b) {
+        return;
     }
+
+    QString cmd = FileUtil::lookPathInDir(info.cmd,info.workDir);
+    if (cmd.isEmpty()) {
+        m_liteApp->appendLog("debug",QString("not find execute file in path %2").arg(info.workDir),true);
+        return;
+    }
+
+    QString fileName = QFileInfo(cmd).fileName();
 
     LiteApi::IEditor *editor = m_liteApp->editorManager()->currentEditor();
     if (editor) {
         m_startDebugFile = editor->filePath();
     }
 
-    this->startDebug(info.cmd,info.args,info.workDir);
+    this->startDebug(fileName,info.args,info.workDir);
+}
+
+void LiteDebug::startDebugTests()
+{
+    if (!m_debugger) {
+        return;
+    }
+    if (m_debugger->isRunning()) {
+        m_debugger->continueRun();
+        return;
+    }
+
+
+    if (!m_liteBuild) {
+        return;
+    }
+
+    m_liteApp->editorManager()->saveAllEditors();
+
+    LiteApi::TargetInfo info = m_liteBuild->getTargetInfo();
+
+    QStringList args;
+    args << "test" << "-gcflags" << "\"-N -l\"" << "-c";
+    bool b = m_liteBuild->execGoCommand(args,info.workDir,true);
+    if (!b) {
+        return;
+    }
+
+    QString cmd = FileUtil::lookPathInDir(info.cmd+".test",info.workDir);
+    if (cmd.isEmpty()) {
+        m_liteApp->appendLog("debug",QString("not find execute test file in path %2").arg(info.workDir),true);
+        return;
+    }
+
+    QString fileName = QFileInfo(cmd).fileName();
+
+    LiteApi::IEditor *editor = m_liteApp->editorManager()->currentEditor();
+    if (editor) {
+        m_startDebugFile = editor->filePath();
+    }
+
+    this->startDebug(fileName,info.args,info.workDir);
 }
 
 void LiteDebug::continueRun()
@@ -519,8 +569,8 @@ void LiteDebug::runToLine()
     if (filePath.isEmpty()) {
         return;
     }
-    QString fileName = QFileInfo(filePath).fileName();
-    m_debugger->runToLine(fileName,textEditor->line()+1);
+    //QString fileName = QFileInfo(filePath).fileName();
+    m_debugger->runToLine(filePath,textEditor->line());
 }
 
 void LiteDebug::stopDebug()
@@ -561,13 +611,6 @@ void LiteDebug::showLine()
         return;
     }
     LiteApi::gotoLine(m_liteApp,m_lastLine.fileName,m_lastLine.line,0,true,true);
-//    LiteApi::IEditor *editor = m_liteApp->fileManager()->openEditor(m_lastLine.fileName,true);
-//    if (editor) {
-//        LiteApi::ITextEditor *textEditor = LiteApi::findExtensionObject<LiteApi::ITextEditor*>(editor,"LiteApi.ITextEditor");
-//        if (textEditor) {
-//            textEditor->gotoLine(m_lastLine.line,0,true);
-//        }
-//    }
 }
 
 void LiteDebug::removeAllBreakPoints()
@@ -721,15 +764,58 @@ void LiteDebug::setCurrentLine(const QString &fileName, int line)
     }
 }
 
+void LiteDebug::setFrameLine(const QString &fileName, int line)
+{
+    if (QFile::exists(fileName)) {
+        LiteApi::IEditor *editor = m_liteApp->fileManager()->openEditor(fileName,true);
+        if (editor) {
+            LiteApi::ITextEditor *textEditor = LiteApi::findExtensionObject<LiteApi::ITextEditor*>(editor,"LiteApi.ITextEditor");
+            if (textEditor) {
+                textEditor->gotoLine(line,0,true);
+            }
+            LiteApi::IEditorMark *editMark = LiteApi::findExtensionObject<LiteApi::IEditorMark*>(editor,"LiteApi.IEditorMark");
+            if (editMark) {
+                editMark->addMark(line,LiteApi::CurrentLineMark);
+            }
+        }
+    }
+}
+
 void LiteDebug::debugCmdInput()
 {
     m_bLastDebugCmdInput = true;
 }
 
+bool LiteDebug::execGocommand(const QStringList &args, const QString &work, bool showLog)
+{
+    QString gocmd = FileUtil::lookupGoBin("go",m_liteApp,false);
+    if (gocmd.isEmpty()) {
+        debugLog(LiteApi::DebugRuntimeLog,QString("go command not find!").arg(args.join(" "),work));
+        return false;
+    }
+    debugLog(LiteApi::DebugRuntimeLog,QString("%1 %2 [%3]").arg(gocmd).arg(args.join(" "),work));
+    QProcess process;
+    process.setWorkingDirectory(work);
+    process.setEnvironment(LiteApi::getGoEnvironment(m_liteApp).toStringList());
+    process.start(gocmd,args);
+    if (!process.waitForFinished()) {
+        return false;
+    }
+    int code = process.exitCode();
+    if (code == 0) {
+        return true;
+    }
+    if (showLog) {
+        QByteArray data = process.readAllStandardError();
+        debugLog(LiteApi::DebugErrorLog,QString::fromUtf8(data));
+    }
+    return false;
+}
+
 void LiteDebug::enterAppInputText(QString text)
 {
     if (m_debugger && m_debugger->isRunning()) {
-        m_debugger->enterText(text);
+        m_debugger->enterAppText(text);
     }
 }
 

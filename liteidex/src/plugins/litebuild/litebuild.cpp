@@ -68,7 +68,6 @@
     BUILD_DIR_PATH
     BUILD_DIR_NAME
     BUILD_DIR_BASENAME
-    BUILD_DIR_GONAME
 
 ### editor file info
 
@@ -82,7 +81,6 @@
     EDITOR_DIR_PATH
     EDITOR_DIR_NAME
     EDITOR_DIR_BASENAME
-    EDITOR_DIR_GONAME
 */
 
 enum {
@@ -186,21 +184,86 @@ LiteBuild::LiteBuild(LiteApi::IApplication *app, QObject *parent) :
     connect(m_fmctxExecuteFileAct,SIGNAL(triggered()),this,SLOT(fmctxExecuteFile()));
 
     m_fmctxGoLockBuildAct = new QAction(tr("Lock Build Path"),this);
-    m_fmctxGoBuildAct = new QAction(tr("Go Build"),this);
-    m_fmctxGoBuildAct->setData("build -v ./...");
-    m_fmctxGoInstallAct = new QAction(tr("Go Install"),this);
-    m_fmctxGoInstallAct->setData("install -v ./...");
-    m_fmctxGoTestAct = new QAction(tr("Go Test"),this);
-    m_fmctxGoTestAct->setData("test -v ./...");
-    m_fmctxGoCleanAct = new QAction(tr("Go Clean"),this);
-    m_fmctxGoCleanAct->setData("clean -i -x ./...");
+
+    m_fmctxGoToolMenu = new QMenu("Go Tool");
+
+    m_fmctxGoBuildAct = new QAction("Go Build",this);
+    m_fmctxGoBuildAct->setData("build -v");
+
+    m_fmctxGoBuildAllAct = new QAction("Go Build All",this);
+    m_fmctxGoBuildAllAct->setData("build -v ./...");
+
+    m_fmctxGoInstallAct = new QAction("Go Install",this);
+    m_fmctxGoInstallAct->setData("install -v");
+
+    m_fmctxGoInstallAllAct = new QAction("Go Install All",this);
+    m_fmctxGoInstallAllAct->setData("install -v ./...");
+
+    m_fmctxGoTestAct = new QAction("Go Test",this);
+    m_fmctxGoTestAct->setData("test -v");
+
+    m_fmctxGoTestAllAct = new QAction("Go Test All",this);
+    m_fmctxGoTestAllAct->setData("test -v ./...");
+
+    m_fmctxGoCleanAct = new QAction("Go Clean",this);
+    m_fmctxGoCleanAct->setData("clean -i -x");
+
+    m_fmctxGoCleanAllAct = new QAction("Go Clean All",this);
+    m_fmctxGoCleanAllAct->setData("clean -i -x ./...");
+
+    m_fmctxGoGetAct = new QAction("Go Get",this);
+    m_fmctxGoGetAct->setData("get -v");
+
+    m_fmctxGoGetUpdateAct = new QAction("Go Get Update",this);
+    m_fmctxGoGetUpdateAct->setData("get -v -u");
+
+    m_fmctxGoGetForceAct = new QAction("Go Get Force",this);
+    m_fmctxGoGetForceAct->setData("get -v -a");
+
+    m_fmctxGoVetAct = new QAction("Go Vet",this);
+    m_fmctxGoVetAct->setData("tool vet -v .");
+
+    m_fmctxGoVetAllCheckAct = new QAction("Go Vet (enable all checks)",this);
+    m_fmctxGoVetAllCheckAct->setData("tool vet -v -all .");
+
+    m_fmctxGoFmtAct = new QAction("GoFmt",this);
+
+    m_fmctxGoToolMenu->addAction(m_fmctxGoBuildAct);
+    m_fmctxGoToolMenu->addAction(m_fmctxGoBuildAllAct);
+    m_fmctxGoToolMenu->addSeparator();
+    m_fmctxGoToolMenu->addAction(m_fmctxGoInstallAct);
+    m_fmctxGoToolMenu->addAction(m_fmctxGoInstallAllAct);
+    m_fmctxGoToolMenu->addSeparator();
+    m_fmctxGoToolMenu->addAction(m_fmctxGoGetAct);
+    m_fmctxGoToolMenu->addAction(m_fmctxGoGetUpdateAct);
+    m_fmctxGoToolMenu->addAction(m_fmctxGoGetForceAct);
+    m_fmctxGoToolMenu->addSeparator();
+    m_fmctxGoToolMenu->addAction(m_fmctxGoTestAct);
+    m_fmctxGoToolMenu->addAction(m_fmctxGoTestAllAct);
+    m_fmctxGoToolMenu->addSeparator();
+    m_fmctxGoToolMenu->addAction(m_fmctxGoCleanAct);
+    m_fmctxGoToolMenu->addAction(m_fmctxGoCleanAllAct);
+    m_fmctxGoToolMenu->addSeparator();
+    m_fmctxGoToolMenu->addAction(m_fmctxGoVetAct);
+    m_fmctxGoToolMenu->addAction(m_fmctxGoVetAllCheckAct);
+    m_fmctxGoToolMenu->addSeparator();
+    m_fmctxGoToolMenu->addAction(m_fmctxGoFmtAct);
+
     connect(m_fmctxGoLockBuildAct,SIGNAL(triggered()),this,SLOT(fmctxGoLockBuild()));
     connect(m_fmctxGoBuildAct,SIGNAL(triggered()),this,SLOT(fmctxGoTool()));
+    connect(m_fmctxGoBuildAllAct,SIGNAL(triggered()),this,SLOT(fmctxGoTool()));
     connect(m_fmctxGoInstallAct,SIGNAL(triggered()),this,SLOT(fmctxGoTool()));
+    connect(m_fmctxGoInstallAllAct,SIGNAL(triggered()),this,SLOT(fmctxGoTool()));
     connect(m_fmctxGoTestAct,SIGNAL(triggered()),this,SLOT(fmctxGoTool()));
+    connect(m_fmctxGoTestAllAct,SIGNAL(triggered()),this,SLOT(fmctxGoTool()));
     connect(m_fmctxGoCleanAct,SIGNAL(triggered()),this,SLOT(fmctxGoTool()));
+    connect(m_fmctxGoCleanAllAct,SIGNAL(triggered()),this,SLOT(fmctxGoTool()));
+    connect(m_fmctxGoGetAct,SIGNAL(triggered()),this,SLOT(fmctxGoTool()));
+    connect(m_fmctxGoGetUpdateAct,SIGNAL(triggered()),this,SLOT(fmctxGoTool()));
+    connect(m_fmctxGoGetForceAct,SIGNAL(triggered()),this,SLOT(fmctxGoTool()));
+    connect(m_fmctxGoVetAct,SIGNAL(triggered()),this,SLOT(fmctxGoTool()));
+    connect(m_fmctxGoVetAllCheckAct,SIGNAL(triggered()),this,SLOT(fmctxGoTool()));
 
-    m_fmctxGoFmtAct = new QAction(tr("Go Fmt"),this);
     connect(m_fmctxGoFmtAct,SIGNAL(triggered()),this,SLOT(fmctxGofmt()));
 
     connect(m_stopAct,SIGNAL(triggered()),this,SLOT(stopAction()));
@@ -221,17 +284,26 @@ LiteBuild::LiteBuild(LiteApi::IApplication *app, QObject *parent) :
     m_outputAutoClearAct->setCheckable(true);
     connect(m_outputAutoClearAct,SIGNAL(triggered(bool)),this,SLOT(setOutputAutoClear(bool)));
 
+    m_outputAutoPosCursorAct = new QAction(tr("Automatic positioning cursor"),this);
+    m_outputAutoPosCursorAct->setCheckable(true);
+    connect(m_outputAutoPosCursorAct,SIGNAL(triggered(bool)),this,SLOT(setOutputAutoPosCursor(bool)));
+
     bool bLineWrap = m_liteApp->settings()->value(LITEBUILD_OUTPUTLINEWRAP,false).toBool();
     m_bOutputAutoClear = m_liteApp->settings()->value(LITEBUILD_OUTPUTAUTOCLEAR,true).toBool();
+
+    bool bAutoPosCursor = m_liteApp->settings()->value(LITEBUILD_OUTPUTAUTOPOSCURSOR,true).toBool();
 
     m_output->setLineWrap(bLineWrap);
     m_outputLineWrapAct->setChecked(bLineWrap);
     m_outputAutoClearAct->setChecked(m_bOutputAutoClear);
+    m_outputAutoPosCursorAct->setChecked(bAutoPosCursor);
+    m_output->setAutoPosCursor(bAutoPosCursor);
 
     m_outputMenu = new QMenu(tr("Setup"));
     m_outputMenu->setIcon(QIcon(":/images/setup.png"));
     m_outputMenu->addAction(m_outputAutoClearAct);
     m_outputMenu->addAction(m_outputLineWrapAct);
+    m_outputMenu->addAction(m_outputAutoPosCursorAct);
 
     m_outputAct = m_liteApp->toolWindowManager()->addToolWindow(Qt::BottomDockWidgetArea,
                                                                 m_output,"buildoutput",
@@ -252,9 +324,11 @@ LiteBuild::LiteBuild(LiteApi::IApplication *app, QObject *parent) :
     connect(m_liteApp->fileManager(),SIGNAL(aboutToShowFolderContextMenu(QMenu*,LiteApi::FILESYSTEM_CONTEXT_FLAG,QFileInfo)),this,SLOT(aboutToShowFolderContextMenu(QMenu*,LiteApi::FILESYSTEM_CONTEXT_FLAG,QFileInfo)));
     connect(m_checkBoxLockBuild,SIGNAL(toggled(bool)),this,SLOT(lockBuildRoot(bool)));
 
-    m_liteAppInfo.insert("LITEAPPDIR",m_liteApp->applicationPath());
-    m_liteAppInfo.insert("LITEIDE_BIN_DIR",m_liteApp->applicationPath());
-    m_liteAppInfo.insert("LITEIDE_RES_DIR",m_liteApp->resourcePath());
+    m_liteAppInfo.insert("LITEIDE_ROOT_PATH",m_liteApp->rootPath());
+    m_liteAppInfo.insert("LITEIDE_APP_PATH",m_liteApp->applicationPath());
+    m_liteAppInfo.insert("LITEIDE_RES_PATH",m_liteApp->resourcePath());
+    m_liteAppInfo.insert("LITEIDE_PLUGIN_PATH",m_liteApp->pluginPath());
+    m_liteAppInfo.insert("LITEIDE_TOOL_PATH",m_liteApp->toolPath());
 
     m_liteApp->extension()->addObject("LiteApi.ILiteBuild",this);
 
@@ -294,48 +368,31 @@ LiteBuild::~LiteBuild()
     if (!m_nullMenu->parent()) {
         delete m_nullMenu;
     }
+    delete m_fmctxGoToolMenu;
 }
 
-void LiteBuild::rebuild()
+bool LiteBuild::execGoCommand(const QStringList &args, const QString &workDir, bool waitFinish)
 {
-    if (!m_build) {
-        return;
-    }
-    BuildAction *ba = m_build->findAction("Build");
-    if (!ba) {
-        return;
-    }
     if (m_process->isRunning()) {
+        if (!m_process->waitForFinished(1000)) {
+            m_process->kill();
+        }
+        m_process->waitForFinished(100);
+    }
+    m_process->setWorkingDirectory(workDir);
+    QString gocmd = FileUtil::lookupGoBin("go",m_liteApp,false);
+    if (gocmd.isEmpty()) {
+        return false;
+    }
+    this->execCommand(gocmd,args.join(" "),workDir);
+    if (!waitFinish) {
+        return true;
+    }
+    if (!m_process->waitForFinished(30000)) {
         m_process->kill();
-        m_process->waitForFinished(1000);
-    }
-    this->execAction(m_build->mimeType(),ba->id());
-    if (!m_process->waitForStarted(1000)) {
-        return;
-    }
-    m_process->waitForFinished(1000);
-}
-
-bool LiteBuild::buildTests()
-{
-   if (!m_build) {
         return false;
     }
-    BuildAction *ba = m_build->findAction("BuildTests");
-    if (!ba) {
-        return false;
-    }
-    if (m_process->isRunning()) {
-        m_process->kill();
-        m_process->waitForFinished(1000);
-    }
-    this->execAction(m_build->mimeType(),ba->id());
-    if (!m_process->waitForStarted(1000)) {
-        return false;
-    }
-    m_process->waitForFinished(1000);
-
-    return true;
+    return m_process->exitCode() == 0;
 }
 
 
@@ -468,14 +525,9 @@ void LiteBuild::aboutToShowFolderContextMenu(QMenu *menu, LiteApi::FILESYSTEM_CO
                 act = menu->actions().at(0);
             }
             menu->insertAction(act,m_fmctxGoLockBuildAct);
-            menu->insertSeparator(act);
-            menu->insertAction(act,m_fmctxGoBuildAct);
-            menu->insertAction(act,m_fmctxGoInstallAct);
-            if (hasTest) {
-                menu->insertAction(act,m_fmctxGoTestAct);
-            }
-            menu->insertAction(act,m_fmctxGoCleanAct);
-            menu->insertAction(act,m_fmctxGoFmtAct);
+            menu->insertSeparator(act);            
+            //m_fmctxGoTestAct->setEnabled(hasTest);
+            menu->insertMenu(act,m_fmctxGoToolMenu);
             menu->insertSeparator(act);
         }
     }
@@ -486,7 +538,7 @@ void LiteBuild::fmctxExecuteFile()
     QString cmd = FileUtil::lookPathInDir(m_fmctxInfo.fileName(),m_fmctxInfo.path());
     if (!cmd.isEmpty()) {
         this->stopAction();
-        this->executeCommand(cmd,QString(),m_fmctxInfo.path(),true,true,false);
+        this->execCommand(cmd,QString(),m_fmctxInfo.path(),true,true,false);
     }
 }
 
@@ -510,7 +562,7 @@ void LiteBuild::fmctxGoTool()
     if (!cmd.isEmpty()) {
         m_liteApp->editorManager()->saveAllEditors();
         this->stopAction();
-        this->executeCommand(cmd,args,m_fmctxInfo.filePath(),true,true,true,false);
+        this->execCommand(cmd,args,m_fmctxInfo.filePath(),true,true,true,false);
     }
 }
 
@@ -523,7 +575,7 @@ void LiteBuild::fmctxGofmt()
     if (!cmd.isEmpty()) {
         m_liteApp->editorManager()->saveAllEditors();
         this->stopAction();
-        this->executeCommand(cmd,args,m_fmctxInfo.filePath(),true,true,true,false);
+        this->execCommand(cmd,args,m_fmctxInfo.filePath(),true,true,true,false);
     }
 }
 
@@ -554,6 +606,12 @@ void LiteBuild::setOutputAutoClear(bool b)
 {
     m_bOutputAutoClear = b;
     m_liteApp->settings()->setValue(LITEBUILD_OUTPUTAUTOCLEAR,b);
+}
+
+void LiteBuild::setOutputAutoPosCursor(bool b)
+{
+    m_liteApp->settings()->setValue(LITEBUILD_OUTPUTAUTOPOSCURSOR,b);
+    m_output->setAutoPosCursor(b);
 }
 
 bool LiteBuild::isLockBuildRoot() const
@@ -595,7 +653,7 @@ void LiteBuild::currentEnvChanged(LiteApi::IEnv*)
     if (!m_process->isRunning()) {
         m_output->updateExistsTextColor();
         m_output->appendTag(tr("Current environment change id \"%1\"").arg(ienv->id())+"\n");
-        this->executeCommand(gobin,"env",LiteApi::getGOROOT(m_liteApp),false,false);
+        this->execCommand(gobin,"env",LiteApi::getGOROOT(m_liteApp),false,false);
     }
 }
 
@@ -883,7 +941,6 @@ void LiteBuild::setCurrentBuild(LiteApi::IBuild *build)
 BUILD_DIR_PATH
 BUILD_DIR_NAME
 BUILD_DIR_BASENAME
-BUILD_DIR_GONAME
 
 EDITOR_FILE_PATH
 EDITOR_FILE_NAME
@@ -893,7 +950,6 @@ EDITOR_FILE_SUFFIX
 EDITOR_DIR_PATH
 EDITOR_DIR_NAME
 EDITOR_DIR_BASENAME
-EDITOR_DIR_GONAME
 */
 void LiteBuild::loadEditorInfo(const QString &filePath)
 {
@@ -909,7 +965,6 @@ void LiteBuild::loadEditorInfo(const QString &filePath)
     m_editorInfo.insert("EDITOR_DIR_PATH",info.path());
     m_editorInfo.insert("EDITOR_DIR_NAME",QFileInfo(info.path()).fileName());
     m_editorInfo.insert("EDITOR_DIR_BASENAME",QFileInfo(info.path()).baseName());
-    m_editorInfo.insert("EDITOR_DIR_GONAME",QFileInfo(info.path()).fileName().replace(" ","_"));
 }
 
 void LiteBuild::loadBuildPath(const QString &buildPath, const QString &buildName, const QString &buildInfo)
@@ -934,7 +989,6 @@ void LiteBuild::loadBuildPath(const QString &buildPath, const QString &buildName
     m_buildInfo.insert("BUILD_DIR_PATH",info.filePath());
     m_buildInfo.insert("BUILD_DIR_NAME",info.fileName());
     m_buildInfo.insert("BUILD_DIR_BASENAME",info.baseName());
-    m_buildInfo.insert("BUILD_DIR_GONAME",info.fileName().replace(" ","_"));
 }
 
 void LiteBuild::loadTargetInfo(LiteApi::IBuild *build)
@@ -1295,7 +1349,7 @@ void LiteBuild::stopAction()
     }
 }
 
-void LiteBuild::executeCommand(const QString &cmd1, const QString &args, const QString &workDir, bool updateExistsTextColor, bool activateOutputCheck, bool navigate, bool command)
+void LiteBuild::execCommand(const QString &cmd1, const QString &args, const QString &workDir, bool updateExistsTextColor, bool activateOutputCheck, bool navigate, bool command)
 {
     if (updateExistsTextColor) {
         m_output->updateExistsTextColor();
@@ -1442,7 +1496,12 @@ void LiteBuild::execAction(const QString &mime, const QString &id)
 //            cmd = findCmd;
 //        }
 //    }
-    QString shell = FileUtil::lookPathInDir(cmd,m_workDir);
+    QString shell;
+    if (ba->cmd() == "$(GO)") {
+        shell = FileUtil::lookupGoBin(cmd,m_liteApp,false);
+    } else {
+        shell = FileUtil::lookPathInDir(cmd,m_workDir);
+    }
     if (shell.isEmpty()) {
         shell = FileUtil::lookPath(cmd,sysenv,false);
     }
@@ -1492,6 +1551,8 @@ void LiteBuild::execAction(const QString &mime, const QString &id)
             }
         }
     }
+
+    args = args.trimmed();
 
     if (!ba->isOutput()) {
         bool b = QProcess::startDetached(cmd,args.split(" "),m_workDir);

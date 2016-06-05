@@ -47,7 +47,6 @@ public slots:
     void loadDebugInfo(const QString &id);
     void saveDebugInfo(const QString &id);
     void addWatch();
-    void addLocalWatch();
     void removeWatch();
     void removeAllWatchAct();
     void watchViewContextMenu(QPoint);
@@ -59,7 +58,7 @@ public slots:
     void setExpand(LiteApi::DEBUG_MODEL_TYPE type, const QModelIndex &index, bool expanded);
     void watchCreated(QString,QString);
     void watchRemoved(QString);
-    void stackClicked(QModelIndex);
+    void doubleClickedStack(QModelIndex);
 protected:
     LiteApi::IApplication *m_liteApp;
     QWidget *m_widget;
@@ -73,7 +72,7 @@ protected:
     TerminalEdit *m_debugLogEdit;
     QMenu      *m_watchMenu;
     QAction    *m_addWatchAct;
-    QAction    *m_addLocalWatchAct;
+    //QAction    *m_addLocalWatchAct;
     QAction    *m_removeWatchAct;
     QAction     *m_removeAllWatchAct;
     QMap<QString,QString> m_watchMap;

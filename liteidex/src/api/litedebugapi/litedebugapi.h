@@ -62,7 +62,7 @@ public:
     virtual QAbstractItemModel *debugModel(DEBUG_MODEL_TYPE type) = 0;
     virtual void setWorkingDirectory(const QString &dir) = 0;
     virtual void setEnvironment (const QStringList &environment) = 0;
-    virtual bool start(const QString &program, const QString &arguments) = 0;
+    virtual bool start(const QString &cmd, const QString &arguments) = 0;
     virtual void stop() = 0;
     virtual bool isRunning() = 0;
     virtual void stepOver() = 0;
@@ -71,14 +71,16 @@ public:
     virtual void continueRun() = 0;
     virtual void runToLine(const QString &fileName, int line) = 0;
     virtual void command(const QByteArray &cmd) = 0;
-    virtual void enterText(const QString &text) = 0;
+    virtual void enterAppText(const QString &text) = 0;
+    virtual void enterDebugText(const QString &text) = 0;
     virtual void expandItem(QModelIndex index, DEBUG_MODEL_TYPE type) = 0;
     virtual void setInitBreakTable(const QMultiMap<QString,int> &bks) = 0;
+    virtual void setInitWatchList(const QStringList &names) = 0;
     virtual void insertBreakPoint(const QString &fileName, int line) = 0;
     virtual void removeBreakPoint(const QString &fileName, int line) = 0;
-    virtual void createWatch(const QString &var, bool floating, bool watchModel = false) = 0;
-    virtual void removeWatch(const QString &var, bool children) = 0;
-    virtual void removeWatchByName(const QString &name, bool children) = 0;
+    virtual void createWatch(const QString &var) = 0;
+    virtual void removeWatch(const QString &var) = 0;
+    virtual void removeAllWatch() = 0;
     virtual void showFrame(QModelIndex index) = 0;
 signals:
     void debugStarted();
@@ -87,6 +89,7 @@ signals:
     void debugLog(LiteApi::DEBUG_LOG_TYPE type, const QString &log);
     void setExpand(LiteApi::DEBUG_MODEL_TYPE type, const QModelIndex &index, bool expanded);
     void setCurrentLine(const QString &fileName, int line);
+    void setFrameLine(const QString &fileName, int line);
     void watchCreated(const QString &watch,const QString &name);
     void watchRemoved(const QString &watch);
 };

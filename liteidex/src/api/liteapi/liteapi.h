@@ -40,6 +40,7 @@
 #include <QFileInfo>
 #include <QDesktopServices>
 #include <QTextCursor>
+#include <QAbstractItemModel>
 
 class ColorStyle;
 class ColorStyleScheme;
@@ -101,6 +102,10 @@ public:
         m_liteApp = app;
         return true;
     }
+    virtual IApplication* application() {
+        return m_liteApp;
+    }
+
 protected:
     IApplication *m_liteApp;
 };
@@ -609,6 +614,31 @@ public:
     virtual IActionContext *actionContextForName(const QString &name) = 0;
 };
 
+class IFilter : public QObject
+{
+    Q_OBJECT
+public:
+    IFilter(QObject *parent = 0) : QObject(parent) {}
+    virtual QString id() const = 0;
+    virtual QAbstractItemModel *model() const = 0;
+    virtual int filter(const QString &text) = 0;
+    virtual void activated(const QString &text) = 0;
+};
+
+class IFilterManager : public IManager
+{
+    Q_OBJECT
+public:
+    IFilterManager(QObject *parent = 0) : IManager(parent) {}
+    virtual void addFilter(const QString &sym, IFilter *filter) = 0;
+    virtual void removeFilter(IFilter *filter) = 0;
+    virtual QList<IFilter*> filterList() const = 0;
+    virtual void setCurrentFilter(IFilter *filter) = 0;
+    virtual IFilter *currentFilter() const = 0;
+signals:
+    void currentFilterChanged(IFilter *filter);
+};
+
 class IGoProxy : public QObject
 {
     Q_OBJECT
@@ -644,13 +674,16 @@ public:
     virtual IOptionManager  *optionManager() = 0;
     virtual IToolWindowManager *toolWindowManager() = 0;
     virtual IHtmlWidgetManager *htmlWidgetManager() = 0;
+    virtual IFilterManager  *filterManager() = 0;
 
     virtual QMainWindow *mainWindow() const = 0;
     virtual QSettings *settings() = 0;
     virtual QMap<QString,QVariant> &globalCookie() = 0; //global cookie
 
-    virtual QString resourcePath() const = 0;
+    virtual QString rootPath() const = 0;
     virtual QString applicationPath() const = 0;
+    virtual QString toolPath() const = 0;
+    virtual QString resourcePath() const = 0;
     virtual QString pluginPath() const = 0;
     virtual QString storagePath() const = 0;
 
@@ -813,9 +846,9 @@ inline IWebKitBrowser *getWebKitBrowser(LiteApi::IApplication *app)
 inline QString getGotools(LiteApi::IApplication *app)
 {
 #ifdef Q_OS_WIN
-    return app->applicationPath()+"/gotools.exe";
+    return app->toolPath()+"/gotools.exe";
 #else
-    return app->applicationPath()+"/gotools";
+    return app->toolPath()+"/gotools";
 #endif
 }
 
@@ -826,7 +859,7 @@ inline QString findPackageByMimeType(LiteApi::IApplication *app, const QString m
 
 } //namespace LiteApi
 
-Q_DECLARE_INTERFACE(LiteApi::IPluginFactory,"LiteApi.IPluginFactory/X27.2")
+Q_DECLARE_INTERFACE(LiteApi::IPluginFactory,"LiteApi.IPluginFactory.X30")
 
 
 #endif //__LITEAPI_H__

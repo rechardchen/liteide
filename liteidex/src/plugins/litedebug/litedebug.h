@@ -61,6 +61,7 @@ signals:
 public slots:
     void hideDebug();
     void appLoaded();
+    void selectedDebug(QAction *act);
     void editorCreated(LiteApi::IEditor*);
     void editorAboutToClose(LiteApi::IEditor*);
     void currentEditorChanged(LiteApi::IEditor*);
@@ -84,8 +85,10 @@ protected slots:
     void debugStarted();
     void debugStoped();
     void setCurrentLine(const QString &fileName, int line);
+    void setFrameLine(const QString &fileName, int line);
     void debugCmdInput();
 protected:
+    bool execGocommand(const QStringList &args, const QString &work, bool showLog);
     void clearLastLine();
     bool m_bLastDebugCmdInput;
     LiteApi::IApplication *m_liteApp;

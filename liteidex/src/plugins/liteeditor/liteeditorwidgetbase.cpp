@@ -382,6 +382,7 @@ LiteEditorWidgetBase::LiteEditorWidgetBase(LiteApi::IApplication *app, QWidget *
     m_visualizeWhitespace = false;
     m_lastLine = -1;
     m_inBlockSelectionMode = false;
+    m_maxTipInfoLines = 10;
 
     m_upToolTipDeployTimer = new QTimer(this);
     m_upToolTipDeployTimer->setSingleShot(true);
@@ -2323,9 +2324,10 @@ void LiteEditorWidgetBase::keyPressEvent(QKeyEvent *e)
         } else if (m_autoBraces4 && keyText == "\"") {
             mr = "\"";
         } else if (m_autoBraces5 && keyText == "`") {
-            mr = "`";
+            if (m_mimeType == "text/x-gosrc") {
+                mr = "`";
+            }
         }
-
         if (m_textLexer->isInStringOrComment(this->textCursor())) {
             QPlainTextEdit::keyPressEvent(e);
             return;
@@ -2552,16 +2554,22 @@ void LiteEditorWidgetBase::indentEnter(QTextCursor cur)
     ensureCursorVisible();
 }
 
-void LiteEditorWidgetBase::showToolTip(const QTextCursor &cursor, const QString &tip)
+static QString simpleInfo(const QString &info, int maxLine)
 {
-    QRect rc = cursorRect(cursor);
-    QPoint pt = mapToGlobal(rc.topRight());
-    QToolTip::showText(pt,tip,this);
+    QStringList lines = info.split("\n");
+    if (lines.size() <= maxLine) {
+        return info;
+    }
+    QStringList out;
+    for (int i = 0; i < maxLine; i++) {
+        out += lines[i];
+    }
+    return out.join("\n")+"\n...";
 }
 
-void LiteEditorWidgetBase::hideToolTip()
+void LiteEditorWidgetBase::showToolTipInfo(const QPoint &pos, const QString &text)
 {
-    QToolTip::hideText();
+    QToolTip::showText(pos,simpleInfo(text,m_maxTipInfoLines),this);
 }
 
 void LiteEditorWidgetBase::cleanWhitespace(bool wholeDocument)
@@ -2859,14 +2867,16 @@ bool LiteEditorWidgetBase::isSpellCheckingAt(QTextCursor cur) const
     return data->shouldSpellCheck(cur.positionInBlock());
 }
 
+
 void LiteEditorWidgetBase::showLink(const LiteApi::Link &link)
 {
-    if (link.showTip
-            && !link.targetInfo.isEmpty()
-//            && m_showLinkInfomation
-            /*&& link.cursorPos == m_lastUpToolTipPos*/) {
+    if (link.showNav && !link.sourceInfo.isEmpty()) {
         QPoint pt = this->mapToGlobal(link.cursorPos);
-        QToolTip::showText(pt,link.targetInfo,this);
+        this->showToolTipInfo(pt,link.sourceInfo);
+
+    } else if (link.showTip && !link.targetInfo.isEmpty()) {
+        QPoint pt = this->mapToGlobal(link.cursorPos);
+        this->showToolTipInfo(pt,link.targetInfo);
     }
 
     if (!link.showNav) {

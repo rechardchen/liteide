@@ -412,7 +412,7 @@ LiteIDE это простая кросплатформенная среда ра
     </message>
     <message>
         <source>Add Local Watch</source>
-        <translation>Добавить в локальное наблюдение</translation>
+        <translation type="obsolete">Добавить в локальное наблюдение</translation>
     </message>
     <message>
         <source>Remove Watch</source>
@@ -428,7 +428,14 @@ LiteIDE это простая кросплатформенная среда ра
     </message>
     <message>
         <source>Watch expression (e.g. s1.str):</source>
-        <translation>Наблюдаемое выражение (например s1.str):</translation>
+        <translation type="obsolete">Наблюдаемое выражение (например s1.str):</translation>
+    </message>
+</context>
+<context>
+    <name>DlvDebuggerOption</name>
+    <message>
+        <source>Form</source>
+        <translation type="unfinished">Форма</translation>
     </message>
 </context>
 <context>
@@ -2158,6 +2165,10 @@ Success: %2.</oldsource>
         <source>Failed to start process</source>
         <translation>Не удалось запустить процесс</translation>
     </message>
+    <message>
+        <source>Automatic positioning cursor</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>LiteBuildOption</name>
@@ -3049,7 +3060,11 @@ Do you want to replace it?</source>
     <message>
         <source>[*] item requeset restart LiteIDE</source>
         <oldsource>[*] item requeset restart liteide</oldsource>
-        <translation>[*] элемент требует перезапуска LiteIDE</translation>
+        <translation type="obsolete">[*] элемент требует перезапуска LiteIDE</translation>
+    </message>
+    <message>
+        <source>[*] item request restart of LiteIDE</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -3168,6 +3183,10 @@ Do you want to replace it?</source>
     <message>
         <source>Could not open %1 for writing.</source>
         <translation>Не удалось открыть %1 для записи.</translation>
+    </message>
+    <message>
+        <source>File Name:</source>
+        <translation type="unfinished">Имя файла:</translation>
     </message>
 </context>
 <context>

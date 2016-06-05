@@ -40,15 +40,24 @@
         <property name="text">
          <string>Filename</string>
         </property>
+        <property name="textAlignment">
+         <set>AlignLeft|AlignVCenter</set>
+        </property>
        </column>
        <column>
         <property name="text">
          <string>Directory</string>
         </property>
+        <property name="textAlignment">
+         <set>AlignLeft|AlignVCenter</set>
+        </property>
        </column>
        <column>
         <property name="text">
          <string>Modified</string>
+        </property>
+        <property name="textAlignment">
+         <set>AlignLeft|AlignVCenter</set>
         </property>
        </column>
        <column>
